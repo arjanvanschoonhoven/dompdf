@@ -547,6 +547,11 @@ class Dompdf
         $xpath = new DOMXPath($this->dom);
         $stylesheets = $xpath->query("//*[name() = 'link' or name() = 'style']");
 
+        //Get customCSS from disk if specified
+        if ($this->getOptions()->getCustomCSS()) {
+            $this->css->load_css_file($this->getOptions()->getCustomCSS(), Stylesheet::ORIG_AUTHOR, true);
+        }
+
         /** @var \DOMElement $tag */
         foreach ($stylesheets as $tag) {
             switch (strtolower($tag->nodeName)) {

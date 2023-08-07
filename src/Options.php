@@ -3,7 +3,6 @@
  * @package dompdf
  * @link    https://github.com/dompdf/dompdf
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * modified by AVS
  */
 namespace Dompdf;
 
@@ -307,6 +306,8 @@ class Options
      */
     private $httpContext;
 
+    private $customCSS;
+
     /**
      * @param array $attributes
      */
@@ -408,6 +409,8 @@ class Options
                 $this->setPdflibLicense($value);
             } elseif ($key === 'httpContext' || $key === 'http_context') {
                 $this->setHttpContext($value);
+            } elseif ($key === 'customCSS' || $key === 'customcss') {
+                $this->setCustomCSS($value);
             }
         }
         return $this;
@@ -475,6 +478,8 @@ class Options
             return $this->getPdflibLicense();
         } elseif ($key === 'httpContext' || $key === 'http_context') {
             return $this->getHttpContext();
+        } elseif ($key === 'customCSS' || $key === 'customcss') {
+            return $this->getCustomCSS();
         }
         return null;
     }
@@ -504,6 +509,20 @@ class Options
     public function setPdflibLicense($pdflibLicense)
     {
         $this->pdflibLicense = $pdflibLicense;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCustomCSS()
+    {
+        return $this->customCSS;
+    }
+
+    public function setCustomCSS($customCSS)
+    {
+        $this->customCSS = $customCSS;
         return $this;
     }
 

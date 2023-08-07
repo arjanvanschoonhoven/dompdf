@@ -8,12 +8,11 @@ namespace Dompdf\Css;
 
 use DOMElement;
 use DOMXPath;
-use Dompdf\Css\Content\Url;
 use Dompdf\Dompdf;
+use Dompdf\Helpers;
 use Dompdf\Exception;
 use Dompdf\FontMetrics;
 use Dompdf\Frame\FrameTree;
-use Dompdf\Helpers;
 
 /**
  * The master stylesheet class
@@ -306,7 +305,7 @@ class Stylesheet
      * @param string $file
      * @param int $origin
      */
-    function load_css_file($file, $origin = self::ORIG_AUTHOR)
+    function load_css_file($file, $origin = self::ORIG_AUTHOR, $customCSS = false)
     {
         if ($origin) {
             $this->_current_origin = $origin;
@@ -328,7 +327,7 @@ class Stylesheet
             $parsed_url = Helpers::explode_url($file);
             $protocol = $parsed_url["protocol"];
 
-            if ($file !== $this->getDefaultStylesheet()) {
+            if ($file !== $this->getDefaultStylesheet() && !$customCSS) {
                 $allowed_protocols = $options->getAllowedProtocols();
                 if (!array_key_exists($protocol, $allowed_protocols)) {
                     Helpers::record_warnings(E_USER_WARNING, "Permission denied on $file. The communication protocol is not supported.", __FILE__, __LINE__);
@@ -940,25 +939,16 @@ class Stylesheet
                             continue;
                         }
 
-                        $content = $style->content;
+                        $content = $style->get_specified("content");
 
-                        // Do not create non-displayed before/after pseudo
-                        // elements. Since styles have not been inherited yet,
-                        // a specified value of `inherit` will always be treated
-                        // as `normal` here. This is fine according to the
-                        // CSS 2.1 spec, as any value computes to `normal` on
-                        // regular elements
+                        // Do not create non-displayed before/after pseudo elements
                         // https://www.w3.org/TR/CSS21/generate.html#content
                         // https://www.w3.org/TR/CSS21/generate.html#undisplayed-counters
                         if ($content === "normal" || $content === "none") {
                             continue;
                         }
 
-                        // https://www.w3.org/TR/css-content-3/#content-property
-                        $single = count($content) === 1 ? $content[0] : null;
-
-                        if ($single instanceof Url) {
-                            $src = $this->resolve_url("url($single->url)");
+                        if (($src = $this->resolve_url($content)) !== "none") {
                             $new_node = $node->ownerDocument->createElement("img_generated");
                             $new_node->setAttribute("src", $src);
                         } else {
@@ -1368,12 +1358,12 @@ class Stylesheet
         $DEBUGCSS = $this->_dompdf->getOptions()->getDebugCss();
         $parsed_url = "none";
 
-        if ($val === null || $val === "" || strcasecmp($val, "none") === 0) {
+        if (empty($val) || $val === "none") {
             $path = "none";
-        } elseif (strncasecmp($val, "url(", 4) !== 0) {
+        } elseif (mb_strpos($val, "url") === false) {
             $path = "none"; //Don't resolve no image -> otherwise would prefix path and no longer recognize as none
         } else {
-            $val = preg_replace("/url\(\s*['\"]?([^'\")]+)['\"]?\s*\)/i", "\\1", trim($val));
+            $val = preg_replace("/url\(\s*['\"]?([^'\")]+)['\"]?\s*\)/", "\\1", trim($val));
 
             // Resolve the url now in the context of the current stylesheet
             $path = Helpers::build_url($this->_protocol,
