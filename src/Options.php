@@ -3,6 +3,7 @@
  * @package dompdf
  * @link    https://github.com/dompdf/dompdf
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
+ * modified by AVS
  */
 namespace Dompdf;
 
