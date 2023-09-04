@@ -221,7 +221,7 @@ class FontMetrics
             [$result, $message] = $rule($remoteFile);
             if ($result !== true) {
                 Helpers::record_warnings(E_USER_WARNING, "Error loading $remoteFile: $message", __FILE__, __LINE__);
-                return false;
+                //return false;
             }
         }
 
